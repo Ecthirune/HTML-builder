@@ -5,11 +5,12 @@ const targetDirectory = path.join(__dirname, 'project-dist');
 const targetDirectorySubfolder = path.join (targetDirectory, 'assets');
 
 var requiredFolders = [targetDirectory, targetDirectorySubfolder];
+var requiredFiles = ['index.html', 'style.css'];
 
-// create required directories
+
 requiredFolders.forEach((directory) => 
 {
-  fs.access(directory, fs.constants.F_OK, (err) => 
+  fs.access(directory, (err) => 
   {
     if (err) 
     {    
@@ -19,6 +20,9 @@ requiredFolders.forEach((directory) =>
         {
           console.log('Error creating destination directory:', err);
           return;
+        }else
+        {
+          console.log('Directory created: ', directory);
         }
       });
     } else 
@@ -29,3 +33,30 @@ requiredFolders.forEach((directory) =>
   });
 });
 
+
+requiredFiles.forEach((file) =>
+{
+  const filePath = path.join(targetDirectory, file);   
+    fs.access(filePath, (err) => 
+    {
+    if (err) 
+    {
+      fs.writeFile(filePath, '', (err) => 
+      {
+        if (err)
+        {
+        console.log('Error:', err, ' creating file in: ', filePath);
+        return;
+        }
+        else
+        {
+          console.log('File created: ', filePath);
+        }
+      });      
+    }else
+    {
+      console.log('File already exists: ', filePath);
+      return;
+    }    
+  });
+});

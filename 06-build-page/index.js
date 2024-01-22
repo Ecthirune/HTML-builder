@@ -53,8 +53,8 @@ async function createFile(directory, name){
   });
 };
 
-function copyDir(source, destination) {
-  fs.mkdir(destination, { recursive: true }, (err) => {
+async function copyDir(source, destination) {
+  await fs.mkdir(destination, { recursive: true }, (err) => {
     if (err) {
       console.log('Error creating destination directory:', err);
       return;
@@ -92,15 +92,95 @@ function copyDir(source, destination) {
 };
 
 
+function buildCSSBundle(source, destination) {
+  fs.readdir(source, (err, files) => {
+    if (err) {
+      console.log('Error reading styles directory:', err);
+      return;
+    }
+
+    const cssFiles = files.filter((file) => path.extname(file) === '.css');
+
+    const styles = [];
+
+    cssFiles.forEach((file) => {
+      const filePath = path.join(source, file);
+
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+          console.log(`Error reading file ${file}:`, err);
+          return;
+        }
+
+        styles.push(data);
+
+        if (styles.length === cssFiles.length) {
+          const bundle = styles.join('\n');
+          const destinationFile = path.join(destination, 'styles.css');
+          fs.writeFile(destinationFile, bundle, 'utf8', (err) => {
+            if (err) {
+              console.log('Error writing bundle file:', err);
+              return;
+            }
+
+            console.log('Bundle file created successfully!');
+          });
+        }
+      });
+    });
+  });
+}
+
+function fillHtml(sourceFolder, destFile) 
+{
+  const styleFile = path.join(sourceFolder);
+
+  fs.readdir(styleFile, (err, files) => {
+    if (err) {
+      console.log(`Error reading directory ${sourceFile}:`, err);
+      return;
+    }
+
+    const cssFiles = files.filter((file) => path.extname(file) === '.css');
+    
+  });
+
+ fs.readFile(destFile, 'utf8', (err, data) => {
+  if (err) {
+    console.log(`Error reading file ${file}:`, err);
+    return;
+  }
+
+  styles.push(data);
+
+  if (styles.length === cssFiles.length) {
+   const bundle = styles.join('\n');
+
+          fs.writeFile(destFile, bundle, 'utf8', (err) => {
+            if (err) {
+              console.log('Error writing bundle file:', err);
+              return;
+            }
+
+            console.log('Bundle file created successfully!');
+          });
+        }
+      });
+    };
+
+
 createFolder(__dirname, 'project-dist');
 const targetDirectory = path.join(__dirname, 'project-dist');
 createFolder(targetDirectory, 'assets');
-const assetsFolder = path.join(targetDirectory, 'assets');
+const targetAssetsFolder = path.join(targetDirectory, 'assets');
 createFile(targetDirectory, 'index.html');
-createFile(targetDirectory, 'style.css');
+createFile(targetDirectory, 'styles.css');
+const cssSource = path.join(__dirname, 'styles');
+buildCSSBundle(cssSource, targetDirectory);
 
-const sourceDir = path.join(__dirname, 'assets');
-copyDir(sourceDir, assetsFolder);
+const sourceAssetsFolder = path.join(__dirname, 'assets');
+copyDir(sourceAssetsFolder, targetAssetsFolder);
+
 
 
 /*

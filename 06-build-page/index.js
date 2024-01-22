@@ -1,13 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-async function createFolder(directory, name)
-{
+async function createFolder(directory, name) {
   const toCreate = path.join(directory, name);
- await fs.access(toCreate, (err) => 
-  {
-    if (err) 
-    {    
+  await fs.access(toCreate, (err) => {
+    if (err) {
       fs.mkdir(toCreate, { recursive: true }, (err) => 
       {
         if (err) 
@@ -116,7 +113,7 @@ function buildCSSBundle(source, destination) {
 
         if (styles.length === cssFiles.length) {
           const bundle = styles.join('\n');
-          const destinationFile = path.join(destination, 'styles.css');
+          const destinationFile = path.join(destination, 'style.css');
           fs.writeFile(destinationFile, bundle, 'utf8', (err) => {
             if (err) {
               console.log('Error writing bundle file:', err);
@@ -131,91 +128,65 @@ function buildCSSBundle(source, destination) {
   });
 }
 
-function fillHtml(sourceFolder, destFile) 
-{
-  const styleFile = path.join(sourceFolder);
+function fillHtml(sourceFolder, destFile) {
+  const templateFile = path.join(__dirname, 'template.html');
 
-  fs.readdir(styleFile, (err, files) => {
+  fs.readFile(templateFile, 'utf8', (err, templateData) => {
     if (err) {
-      console.log(`Error reading directory ${sourceFile}:`, err);
+      console.log(`Error reading template file ${templateFile}:`, err);
       return;
     }
 
-    const cssFiles = files.filter((file) => path.extname(file) === '.css');
-    
-  });
+    fs.readdir(sourceFolder, (err, files) => {
+      if (err) {
+        console.log(`Error reading components folder ${sourceFolder}:`, err);
+        return;
+      }
 
- fs.readFile(destFile, 'utf8', (err, data) => {
-  if (err) {
-    console.log(`Error reading file ${file}:`, err);
-    return;
-  }
+      files.forEach((file) => {
+        const componentName = path.parse(file).name;
+        const componentPath = path.join(sourceFolder, file);
 
-  styles.push(data);
+        fs.readFile(componentPath, 'utf8', (err, componentData) => {
+          if (err) {
+            console.log(`Error reading component file ${componentPath}:`, err);
+            return;
+          }
 
-  if (styles.length === cssFiles.length) {
-   const bundle = styles.join('\n');
+          const templateTag = `{{${componentName}}}`;
+          templateData = templateData.replace(templateTag, componentData);
 
-          fs.writeFile(destFile, bundle, 'utf8', (err) => {
-            if (err) {
-              console.log('Error writing bundle file:', err);
-              return;
-            }
+          if (files.indexOf(file) === files.length - 1) {
+            fs.writeFile(destFile, templateData, 'utf8', (err) => {
+              if (err) {
+                console.log(`Error writing file ${destFile}:`, err);
+                return;
+              }
 
-            console.log('Bundle file created successfully!');
-          });
-        }
+              console.log(`File ${destFile} created successfully!`);
+            });
+          }
+        });
       });
-    };
+    });
+  });
+};
 
-
+// add required folders
 createFolder(__dirname, 'project-dist');
 const targetDirectory = path.join(__dirname, 'project-dist');
 createFolder(targetDirectory, 'assets');
 const targetAssetsFolder = path.join(targetDirectory, 'assets');
+// create required files
 createFile(targetDirectory, 'index.html');
-createFile(targetDirectory, 'styles.css');
+createFile(targetDirectory, 'style.css');
+// build css
 const cssSource = path.join(__dirname, 'styles');
 buildCSSBundle(cssSource, targetDirectory);
-
+// copy assets
 const sourceAssetsFolder = path.join(__dirname, 'assets');
 copyDir(sourceAssetsFolder, targetAssetsFolder);
-
-
-
-/*
-fs.readdir(assetsFolder, (err, files) => 
-{
-  if (err) 
-  {
-    console.log('Error reading source directory:', err);
-    return;
-  }
-  files.forEach((file) => 
-  {
-    const sourcePath = path.join(assetsFolder, file);
-    fs.stat(sourcePath, (err, stats) => 
-    {
-      if (err) 
-      {
-        console.log(`Error retrieving file stats for ${file}:`, err);
-        return;
-      }
-      const destinationPath = path.join(targetDirectorySubfolder, file);
-      if (stats.isFile()) 
-      {       
-
-        fs.copyFile(sourcePath, destinationPath, (err) => 
-        {
-          if (err) 
-          {
-            console.log(`Error copying file ${file}:`, err);
-          }
-        });   
-      } else if (stats.isDirectory()) 
-      {
-        fs.readdir(stats, (err, files));
-        createFolder(destinationPath);
-      }
-    })})});
-*/
+// fill html template
+const htmlComponents = path.join(__dirname, 'components');
+const htmlDestination = path.join(targetDirectory, 'index.html');
+fillHtml(htmlComponents, htmlDestination);

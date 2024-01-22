@@ -5,50 +5,39 @@ async function createFolder(directory, name) {
   const toCreate = path.join(directory, name);
   await fs.access(toCreate, (err) => {
     if (err) {
-      fs.mkdir(toCreate, { recursive: true }, (err) => 
-      {
-        if (err) 
-        {
+      fs.mkdir(toCreate, { recursive: true }, (err) => {
+        if (err) {
           console.log('Error creating destination directory:', err);
           return;
-        }else
-        {
+        } else {
           console.log('Directory created: ', toCreate);
         }
       });
-    } else 
-    {    
+    } else {
       console.log('Directory already exists:', toCreate);
       return;
     }
   });
-};
+}
 
-async function createFile(directory, name){
-  const filePath = path.join(directory, name);   
-  await fs.access(filePath, (err) => 
-    {
-    if (err) 
-    {
-      fs.writeFile(filePath, '', (err) => 
-      {
-        if (err)
-        {
-        console.log('Error:', err, ' creating file in: ', filePath);
-        return;
-        }
-        else
-        {
+async function createFile(directory, name) {
+  const filePath = path.join(directory, name);
+  await fs.access(filePath, (err) => {
+    if (err) {
+      fs.writeFile(filePath, '', (err) => {
+        if (err) {
+          console.log('Error:', err, ' creating file in: ', filePath);
+          return;
+        } else {
           console.log('File created: ', filePath);
         }
-      });      
-    }else
-    {
+      });
+    } else {
       console.log('File already exists: ', filePath);
       return;
-    }    
+    }
   });
-};
+}
 
 async function copyDir(source, destination) {
   await fs.mkdir(destination, { recursive: true }, (err) => {
@@ -86,8 +75,7 @@ async function copyDir(source, destination) {
       });
     });
   });
-};
-
+}
 
 function buildCSSBundle(source, destination) {
   fs.readdir(source, (err, files) => {
@@ -170,7 +158,7 @@ function fillHtml(sourceFolder, destFile) {
       });
     });
   });
-};
+}
 
 // add required folders
 createFolder(__dirname, 'project-dist');

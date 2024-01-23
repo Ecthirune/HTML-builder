@@ -5,37 +5,44 @@ const sourceDir = path.join(__dirname, 'files');
 const destinationDir = path.join(__dirname, 'files-copy');
 
 function copyDir(source, destination) {
-  fs.mkdir(destination, { recursive: true }, (err) => {
-    if (err) {
-      console.log('Error creating destination directory:', err);
+  fs.rm(destination, { recursive: true }, (err) => {
+    if (err && err.code !== 'ENOENT') {
+      console.log('Error removing destination directory:', err);
       return;
     }
 
-    fs.readdir(source, (err, files) => {
+    fs.mkdir(destination, { recursive: true }, (err) => {
       if (err) {
-        console.log('Error reading source directory:', err);
+        console.log('Error creating destination directory:', err);
         return;
       }
 
-      files.forEach((file) => {
-        const sourcePath = path.join(source, file);
-        const destinationPath = path.join(destination, file);
+      fs.readdir(source, (err, files) => {
+        if (err) {
+          console.log('Error reading source directory:', err);
+          return;
+        }
 
-        fs.stat(sourcePath, (err, stats) => {
-          if (err) {
-            console.log(`Error retrieving file stats for ${file}:`, err);
-            return;
-          }
+        files.forEach((file) => {
+          const sourcePath = path.join(source, file);
+          const destinationPath = path.join(destination, file);
 
-          if (stats.isFile()) {
-            fs.copyFile(sourcePath, destinationPath, (err) => {
-              if (err) {
-                console.log(`Error copying file ${file}:`, err);
-              }
-            });
-          } else if (stats.isDirectory()) {
-            copyDir(sourcePath, destinationPath);
-          }
+          fs.stat(sourcePath, (err, stats) => {
+            if (err) {
+              console.log(`Error retrieving file stats for ${file}:`, err);
+              return;
+            }
+
+            if (stats.isFile()) {
+              fs.copyFile(sourcePath, destinationPath, (err) => {
+                if (err) {
+                  console.log(`Error copying file ${file}:`, err);
+                }
+              });
+            } else if (stats.isDirectory()) {
+              copyDir(sourcePath, destinationPath);
+            }
+          });
         });
       });
     });

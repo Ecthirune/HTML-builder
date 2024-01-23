@@ -17,7 +17,6 @@ console.log('Welcome! Please enter some text (or type "exit" to quit):');
 
 rl.on('line', (input) => {
   if (input.toLowerCase() === 'exit') {
-    console.log('Goodbye!');
     rl.close();
     fileStream.end();
   } else {

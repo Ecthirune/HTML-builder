@@ -116,48 +116,29 @@ function buildCSSBundle(source, destination) {
   });
 }
 
-function fillHtml(sourceFolder, destFile) {
-  const templateFile = path.join(__dirname, 'template.html');
+async function fillHtml(sourceFolder, destFile) {
+  try {
+    const templateFile = path.join(__dirname, 'template.html');
+    var templateData = await fs.promises.readFile(templateFile, 'utf8');
 
-  fs.readFile(templateFile, 'utf8', (err, templateData) => {
-    if (err) {
-      console.log(`Error reading template file ${templateFile}:`, err);
-      return;
+    const files = await fs.promises.readdir(sourceFolder);
+    for (const file of files) {
+      const componentName = path.parse(file).name;
+      const componentPath = path.join(sourceFolder, file);
+      const componentData = await fs.promises.readFile(componentPath, 'utf8');
+
+      const templateTag = `{{${componentName}}}`;
+      templateData = templateData.replace(
+        new RegExp(templateTag, 'g'),
+        componentData,
+      );
     }
 
-    fs.readdir(sourceFolder, (err, files) => {
-      if (err) {
-        console.log(`Error reading components folder ${sourceFolder}:`, err);
-        return;
-      }
-
-      files.forEach((file) => {
-        const componentName = path.parse(file).name;
-        const componentPath = path.join(sourceFolder, file);
-
-        fs.readFile(componentPath, 'utf8', (err, componentData) => {
-          if (err) {
-            console.log(`Error reading component file ${componentPath}:`, err);
-            return;
-          }
-
-          const templateTag = `{{${componentName}}}`;
-          templateData = templateData.replace(templateTag, componentData);
-
-          if (files.indexOf(file) === files.length - 1) {
-            fs.writeFile(destFile, templateData, 'utf8', (err) => {
-              if (err) {
-                console.log(`Error writing file ${destFile}:`, err);
-                return;
-              }
-
-              console.log(`File ${destFile} created successfully!`);
-            });
-          }
-        });
-      });
-    });
-  });
+    await fs.promises.writeFile(destFile, templateData, 'utf8');
+    console.log('HTML file filled with component data and saved successfully.');
+  } catch (error) {
+    console.error('Error filling HTML file:', error);
+  }
 }
 
 // add required folders

@@ -19,16 +19,18 @@ rl.on('line', (input) => {
   if (input.toLowerCase() === 'exit') {
     console.log('Goodbye!');
     rl.close();
+    fileStream.end();
   } else {
     fileStream.write(input + '\n');
   }
 });
 
 rl.on('close', () => {
+  console.log('Goodbye!');
   fileStream.end();
 });
 
 process.on('SIGINT', () => {
-  console.log('Goodbye!');
   rl.close();
+  fileStream.end();
 });

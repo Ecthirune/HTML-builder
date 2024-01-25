@@ -23,19 +23,14 @@ async function createFolder(directory, name) {
 async function createFile(directory, name) {
   const filePath = path.join(directory, name);
   await fs.access(filePath, (err) => {
-    if (err) {
-      fs.writeFile(filePath, '', (err) => {
-        if (err) {
-          console.log('Error:', err, ' creating file in: ', filePath);
-          return;
-        } else {
-          console.log('File created: ', filePath);
-        }
-      });
-    } else {
-      console.log('File already exists: ', filePath);
-      return;
-    }
+    fs.writeFile(filePath, '', (err) => {
+      if (err) {
+        console.log('Error:', err, ' creating file in: ', filePath);
+        return;
+      } else {
+        console.log('File created: ', filePath);
+      }
+    });
   });
 }
 
